@@ -23,7 +23,7 @@ public:
     string name;
     string description;
     string due_date;
-    string status;   // "Not Started", "In Progress", "Completed"
+    string status;   // "Completed", "In Progress", "Not Started"
 };
 
 
@@ -336,4 +336,4 @@ private:
     mutex mtx_;
 };
 
-#endif // DBACCESS_HPP
+#endif

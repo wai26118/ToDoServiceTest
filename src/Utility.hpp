@@ -1,6 +1,3 @@
-// Utility.hpp
-// Common utility functions for the ToDoService project
-
 #ifndef UTILITY_HPP
 #define UTILITY_HPP
 
@@ -42,4 +39,4 @@ static string generate_id() {
     return id;
 }
 
-#endif // UTILITY_HPP
+#endif
