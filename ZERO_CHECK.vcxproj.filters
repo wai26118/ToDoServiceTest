@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\interviews\Sleekflow\RoundTwo\ToDoServiceTest\CMakeFiles\37e18fb181121b1984458565a3584c1a\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{6AD41E28-E10B-3A13-AA01-9C98A2EBBADF}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
