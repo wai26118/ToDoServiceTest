@@ -46,3 +46,25 @@ target_link_libraries(ToDoService PRIVATE libpqxx::pqxx)
 # nlohmann_json
 target_link_libraries(ToDoService PRIVATE nlohmann_json::nlohmann_json)
 
+
+################# Unit Tests #################
+
+enable_testing()
+find_package(GTest CONFIG REQUIRED)
+
+add_executable(todo_tests
+    tests/todo_service_test.cpp
+    src/ToDoService.cpp
+    src/DbAccess.hpp   # if you have separate .cpp
+    src/Utility.hpp
+)
+
+target_link_libraries(todo_tests PRIVATE
+        GTest::gtest
+        GTest::gtest_main
+        Boost::json
+        Boost::system
+        libpqxx::pqxx
+)
+
+add_test(NAME TodoServiceTests COMMAND todo_tests)

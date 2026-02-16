@@ -6,14 +6,15 @@
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}\\build\\Debug\\ToDoService.exe",
+            // "program": "${workspaceFolder}\\build\\Debug\\todo_tests.exe",
             "symbolSearchPath": "${workspaceFolder}\\build\\Debug",
-            "console": "integratedTerminal",
+            "console": "integratedTerminal",            
             // "console": false,
             "logging": {
               "moduleLoad": false,
               "trace": true
             },
-            "visualizerFile": "${workspaceFolder}"            
+            "visualizerFile": "${workspaceFolder}"
           }
     ]
 }
