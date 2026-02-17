@@ -41,20 +41,17 @@ The design is inspired by a real-time collaborative TODO system (CRDTs, Redis Pu
 - Media attachments -->
 
 ## Project Structure
-ToDoService/
-├── CMakeLists.txt          # Build system configuration
-├── README.md
-├── src/
-│   └── Server.cpp              # Main HTTP server
-│   └── Utility.hpp             # Helper functions
-│   └── DbAccess.hpp            # PgPool connection pool + low-level CRUD methods
-│   └── ToDoService.cpp         # Implementation of ToDoService class
-│   └── ToDoService.hpp         # Service layer: business logic, CRUD wrappers
-└── tests/
-    └── todo_service_test.cpp   # GoogleTest unit tests
-   
-
-
+    ToDoService/
+    ├── CMakeLists.txt          # Build system configuration
+    ├── README.md
+    ├── src/
+    │   └── Server.cpp              # Main HTTP server
+    │   └── Utility.hpp             # Helper functions
+    │   └── DbAccess.hpp            # PgPool connection pool + low-level CRUD methods
+    │   └── ToDoService.cpp         # Implementation of ToDoService class
+    │   └── ToDoService.hpp         # Service layer: business logic, CRUD wrappers
+    └── tests/
+        └── todo_service_test.cpp   # GoogleTest unit tests
 
 ## Prerequisites
 
@@ -64,7 +61,7 @@ ToDoService/
 - **PostgreSQL** 13+ (local instance)
 - **GoogleTest** (via vcpkg)
 
-# Installed vcpkg packages:
+## Installed vcpkg packages:
     vcpkg install boost-asio:x64-windows
     vcpkg install boost-beast:x64-windows
     vcpkg install boost-system:x64-windows
@@ -73,7 +70,7 @@ ToDoService/
     vcpkg install libpqxx:x64-windows
     vcpkg install gtest:x64-windows
 
-# Build Instructions
+## Build Instructions
 1. Configure CMake (from project root)
 
     mkdir build
@@ -95,7 +92,7 @@ ToDoService/
 Server listens on: http://localhost:8080
 
 
-# Run Unit Tests
+## Run Unit Tests
     cd build
     ctest -C Debug -V (or .\Debug\todo_tests.exe..)
     # or
