@@ -73,21 +73,27 @@ The design is inspired by a real-time collaborative TODO system (CRDTs, Redis Pu
 ## Build Instructions
 1. Configure CMake (from project root)
 
+    ```cmd
     mkdir build
     cd build
     cmake .. -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows
+    ```
 
 2. Build (Debug or Release)
 
+    ```cmd
     cmake --build . --config Debug
     # or
     cmake --build . --config Release
+    ```
 
 3. Run the server
 
+    ```cmd
     .\Debug\ToDoService.exe
     # or
     .\Release\ToDoService.exe
+    ```
 
 Server listens on: http://localhost:8080
 
