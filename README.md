@@ -75,16 +75,19 @@ ToDoService/
 
 # Build Instructions
 1. Configure CMake (from project root)
+
     mkdir build
     cd build
     cmake .. -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows
 
 2. Build (Debug or Release)
+
     cmake --build . --config Debug
     # or
     cmake --build . --config Release
 
 3. Run the server
+
     .\Debug\ToDoService.exe
     # or
     .\Release\ToDoService.exe
