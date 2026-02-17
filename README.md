@@ -65,44 +65,38 @@ ToDoService/
 - **GoogleTest** (via vcpkg)
 
 # Installed vcpkg packages:
-```cmd
-vcpkg install boost-asio:x64-windows
-vcpkg install boost-beast:x64-windows
-vcpkg install boost-system:x64-windows
-vcpkg install boost-thread:x64-windows
-vcpkg install boost-json:x64-windows
-vcpkg install libpqxx:x64-windows
-vcpkg install gtest:x64-windows
-
+    vcpkg install boost-asio:x64-windows
+    vcpkg install boost-beast:x64-windows
+    vcpkg install boost-system:x64-windows
+    vcpkg install boost-thread:x64-windows
+    vcpkg install boost-json:x64-windows
+    vcpkg install libpqxx:x64-windows
+    vcpkg install gtest:x64-windows
 
 # Build Instructions
 1. Configure CMake (from project root)
-```cpp
-mkdir build
-cd build
-cmake .. -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows
+    mkdir build
+    cd build
+    cmake .. -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows
 
 2. Build (Debug or Release)
-```cpp
-cmake --build . --config Debug
-# or
-cmake --build . --config Release
+    cmake --build . --config Debug
+    # or
+    cmake --build . --config Release
 
 3. Run the server
-```cpp
-.\Debug\ToDoService.exe
-# or
-.\Release\ToDoService.exe
+    .\Debug\ToDoService.exe
+    # or
+    .\Release\ToDoService.exe
 
 Server listens on: http://localhost:8080
 
 
 # Run Unit Tests
-```cmd
-cd build
-ctest -C Debug -V (or .\Debug\todo_tests.exe..)
-# or
-ctest -C Release -V (or .\Release\todo_tests.exe..)
+    cd build
+    ctest -C Debug -V (or .\Debug\todo_tests.exe..)
+    # or
+    ctest -C Release -V (or .\Release\todo_tests.exe..)
 
 
 
