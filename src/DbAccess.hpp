@@ -52,7 +52,7 @@ public:
         conns_.push_back(conn);
     }
 
-    bool CreateToDoItem(ToDoItem item)
+    virtual bool CreateToDoItem(ToDoItem item)
     {
         try
         {   
@@ -85,13 +85,13 @@ public:
         }
         return true;
     }
-    bool GetAllToDoItems(
-    boost::json::array& out_items,
-    std::optional<std::string> status_filter      = std::nullopt,
-    std::optional<std::string> due_date_after     = std::nullopt,
-    std::optional<std::string> due_date_before    = std::nullopt,
-    std::optional<std::string> sort_by            = "due_date",
-    std::optional<std::string> sort_order         = "asc")   
+    virtual bool GetAllToDoItems(
+        boost::json::array& out_items,
+        std::optional<std::string> status_filter      = std::nullopt,
+        std::optional<std::string> due_date_after     = std::nullopt,
+        std::optional<std::string> due_date_before    = std::nullopt,
+        std::optional<std::string> sort_by            = "due_date",
+        std::optional<std::string> sort_order         = "asc")   
     {
         out_items.clear();
 
@@ -199,7 +199,7 @@ public:
         }
     }
 
-    bool GetToDoItemById(const string& id, json::object& item)
+    virtual bool GetToDoItemById(const string& id, json::object& item)
     {
         try
         {   
@@ -239,7 +239,7 @@ public:
         return true;
     }
 
-    bool UpdateToDoItem(const string& id, const map<string, string>& updates)
+    virtual bool UpdateToDoItem(const string& id, const map<string, string>& updates)
     {
         try
         {   
@@ -293,7 +293,7 @@ public:
         return true;
     }
 
-    bool DeleteToDoItem(const string& id)
+    virtual bool DeleteToDoItem(const string& id)
     {
         try
         {   
