@@ -15,7 +15,7 @@ The design is inspired by a real-time collaborative TODO system (CRDTs, Redis Pu
 
 - REST endpoints for TODO items (flat table – no lists/users yet)
   - `POST /todos` – create item
-  - `GET /todos` – list items (with filters: status, due_date range)
+  - `GET /todos` – list items (with filters: status, due_date range, priority, tags)
   - `GET /todos/{id}` – get single item
   - `PATCH /todos/{id}` – update fields
   - `DELETE /todos/{id}` – delete item
@@ -23,7 +23,9 @@ The design is inspired by a real-time collaborative TODO system (CRDTs, Redis Pu
   - `?status=In%20Progress`
   - `?due_date_after=2026-02-01T00:00:00Z`
   - `?due_date_before=2026-03-01T00:00:00Z`
-  - `?sort=name|due_date|status|id`
+  - `?min_priority=3` / `?max_priority=5`
+  - `?tag=work` (items that contain this tag)
+  - `?sort=name|due_date|status|id|priority`
   - `?order=asc|desc`
 - PostgreSQL storage (with enum for status)
 - UUID v4 generation for item IDs
@@ -31,14 +33,10 @@ The design is inspired by a real-time collaborative TODO system (CRDTs, Redis Pu
 
 ## Planned / Future Features (not yet implemented)
 
-<!-- - List scoping (`list_id` + endpoints under `/lists/{listId}/todos`)
+- List scoping (`list_id` + endpoints under `/lists/{listId}/todos`)
 - User authentication & permissions
-- WebSocket endpoint (`/ws/{listId}`) for real-time CRDT deltas
-- Redis Pub/Sub for real-time fan-out
 - Kafka consumer + event sourcing processing
-- Sequence CRDT (LSEQ/Logoot) for ordered items
 - Sharing links
-- Media attachments -->
 
 ## Project Structure
     ToDoService/
