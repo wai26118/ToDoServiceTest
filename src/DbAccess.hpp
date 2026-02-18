@@ -24,6 +24,8 @@ public:
     string description;
     string due_date;
     string status;   // "Completed", "In Progress", "Not Started"
+    int priority;    // 1 (highest) to 5 (lowest)
+    vector<string> tags;
 };
 
 
@@ -64,11 +66,11 @@ public:
             pqxx::work txn(*conn_ptr);            
             string new_id = generate_id();
             auto result = txn.exec_params(
-                "INSERT INTO ToDoItems (id, name, description, due_date, status) "
-                "VALUES ($1, $2, $3, $4, $5::todo_item_status)",
+                "INSERT INTO ToDoItems (id, name, description, due_date, status, priority, tags) "
+                "VALUES ($1, $2, $3, $4, $5::todo_item_status, $6, $7::text[])",
                 new_id, item.name, item.description.empty() ? nullopt : optional<string>{item.description},
                 item.due_date.empty() ? nullopt : optional<string>{item.due_date},
-                item.status
+                item.status, item.priority, item.tags
             );
             txn.commit();
             this->release(conn_ptr);
@@ -85,18 +87,22 @@ public:
         }
         return true;
     }
-    virtual bool GetAllToDoItems(
+    
+    bool GetAllToDoItems(
         boost::json::array& out_items,
         std::optional<std::string> status_filter      = std::nullopt,
         std::optional<std::string> due_date_after     = std::nullopt,
         std::optional<std::string> due_date_before    = std::nullopt,
+        std::optional<int> min_priority               = std::nullopt,
+        std::optional<int> max_priority               = std::nullopt,
+        std::optional<std::string> tag_contains       = std::nullopt,
         std::optional<std::string> sort_by            = "due_date",
-        std::optional<std::string> sort_order         = "asc")   
+        std::optional<std::string> sort_order         = "asc"
+    )   
     {
         out_items.clear();
 
         try {
-            // Get connection (using your existing pattern)
             auto conn_ptr = this->get();
             if (!conn_ptr) 
             {
@@ -106,74 +112,133 @@ public:
 
             pqxx::work txn(*conn_ptr);
 
-            // Build WHERE clause
             std::string where_clause;
             std::vector<std::string> params;
 
-            if (status_filter.has_value()) {
+            auto add_condition = [&](const std::string& cond, const std::string& val) {
                 where_clause += (where_clause.empty() ? "WHERE " : " AND ");
-                where_clause += "status = $" + std::to_string(params.size() + 1);
-                params.push_back(*status_filter);
+                where_clause += cond + " $" + std::to_string(params.size() + 1);
+                params.push_back(val);
+            };
+
+            if (status_filter.has_value()) 
+            {
+                add_condition("status = ", *status_filter);
             }
 
-            if (due_date_after.has_value()) {
-                where_clause += (where_clause.empty() ? "WHERE " : " AND ");
-                where_clause += "due_date > $" + std::to_string(params.size() + 1);
-                params.push_back(*due_date_after);
+            if (due_date_after.has_value()) 
+            {
+                add_condition("due_date > ", *due_date_after);
             }
 
-            if (due_date_before.has_value()) {
-                where_clause += (where_clause.empty() ? "WHERE " : " AND ");
-                where_clause += "due_date < $" + std::to_string(params.size() + 1);
-                params.push_back(*due_date_before);
+            if (due_date_before.has_value()) 
+            {
+                add_condition("due_date < ", *due_date_before);
             }
 
-            // Build ORDER BY clause
+            if (min_priority.has_value()) 
+            {
+                add_condition("priority >= ", std::to_string(*min_priority));
+            }
+
+            if (max_priority.has_value()) 
+            {
+                add_condition("priority <= ", std::to_string(*max_priority));
+            }
+
+            if (tag_contains.has_value()) 
+            {
+                // PostgreSQL: check if array contains value
+                where_clause += (where_clause.empty() ? "WHERE " : " AND ");
+                where_clause += "$" + std::to_string(params.size() + 1) + " = ANY(tags)";
+                params.push_back(*tag_contains);
+            }
+
             std::string order_clause = " ORDER BY ";
 
             std::string field = sort_by.value_or("due_date");
             std::string direction = (sort_order.value_or("asc") == "desc") ? "DESC" : "ASC";
 
-            if (field == "due_date") {
+            if (field == "due_date") 
+            {
                 order_clause += "due_date " + direction + " NULLS LAST";
-            }
-            else if (field == "name") {
+            } 
+            else if (field == "name") 
+            {
                 order_clause += "name " + direction;
-            }
-            else if (field == "status") {
+            } 
+            else if (field == "status") 
+            {
                 order_clause += "status " + direction;
-            }
-            else if (field == "id") {
+            } 
+            else if (field == "id") 
+            {
                 order_clause += "id " + direction;
-            }
-            else {
-                // Fallback to default
-                order_clause += "due_date ASC NULLS LAST";
+            } 
+            else if (field == "priority") 
+            {
+                order_clause += "priority " + direction + " NULLS LAST";
+            } 
+            else 
+            {
+                order_clause += "due_date ASC NULLS LAST";  // fallback
             }
 
-            // Final query
-            std::string sql = "SELECT id, name, description, due_date, status FROM ToDoItems "
+            // Final SQL query – include new columns
+            std::string sql = 
+                "SELECT id, name, description, due_date, status, priority, tags "
+                "FROM ToDoItems "
                 + where_clause
                 + order_clause;
 
-            // Execute with parameters
             pqxx::result rows;
-            if (params.empty()) {
+            if (params.empty()) 
+            {
                 rows = txn.exec(sql);
-            } else if (params.size() == 1) {
+            } 
+            else if (params.size() == 1) 
+            {
                 rows = txn.exec_params(sql, params[0]);
-            } else if (params.size() == 2) {
+            } 
+            else if (params.size() == 2) 
+            {
                 rows = txn.exec_params(sql, params[0], params[1]);
-            } else if (params.size() == 3) {
+            } 
+            else if (params.size() == 3) 
+            {
                 rows = txn.exec_params(sql, params[0], params[1], params[2]);
-            } else if (params.size() == 4) {
+            } 
+            else if (params.size() == 4) 
+            {
                 rows = txn.exec_params(sql, params[0], params[1], params[2], params[3]);
-            } else {
-                throw std::runtime_error("Too many parameters");
+            } 
+            else if (params.size() == 5) 
+            {
+                rows = txn.exec_params(sql, params[0], params[1], params[2], params[3], params[4]);
+            } 
+            else if (params.size() == 6) 
+            {
+                rows = txn.exec_params(sql, params[0], params[1], params[2], params[3], params[4], params[5]);
+            } 
+            else if (params.size() == 7) 
+            {
+                rows = txn.exec_params(sql, params[0], params[1], params[2], params[3], params[4], params[5], params[6]);
+            } 
+            else if (params.size() == 8) 
+            {
+                rows = txn.exec_params(sql, params[0], params[1], params[2], params[3], params[4], params[5], params[6], params[7]);
+            } 
+            else if (params.size() == 9) 
+            {
+                rows = txn.exec_params(sql, params[0], params[1], params[2], params[3], params[4], params[5], params[6], params[7], params[8]);
+            } 
+            else 
+            {
+                throw std::runtime_error("Too many parameters for exec_params (max 9 supported in this impl)");
             }
 
-            // Build JSON array
-            for (auto row : rows) {
+            for (auto row : rows) 
+            {
                 boost::json::object item;
 
                 item["id"]          = row["id"].as<std::string>();
@@ -181,19 +246,23 @@ public:
                 item["description"] = row["description"].is_null() ? "" : row["description"].as<std::string>();
                 item["due_date"]    = row["due_date"].is_null() ? "" : row["due_date"].as<std::string>();
                 item["status"]      = row["status"].as<std::string>();
+                item["priority"]    = row["priority"].as<int>();
+
+                string tagsStr = row["tags"].is_null() ? "" : row["tags"].as<std::string>();
+                if (!tagsStr.empty() && tagsStr.front() == '{' && tagsStr.back() == '}') 
+                {
+                    tagsStr = tagsStr.substr(1, tagsStr.size() - 2);
+                }
 
                 out_items.emplace_back(std::move(item));
-
-                // print out for debugging
-                std::cout << "Fetched item: " << row["status"].as<std::string>() << std::endl;
+                std::cout << "Fetched item: " << row["name"].as<std::string>() << std::endl;
             }
 
-            // Return connection
             release(conn_ptr);
-
             return true;
         }
-        catch (const std::exception& e) {
+        catch (const std::exception& e) 
+        {
             std::cerr << "GetAllToDoItems failed: " << e.what() << std::endl;
             return false;
         }
@@ -210,16 +279,24 @@ public:
             }
             pqxx::work txn(*conn_ptr);            
 
-            auto row = txn.exec_params1("SELECT name, description, due_date, status "
+            auto row = txn.exec_params1("SELECT name, description, due_date, status, priority, tags "
                                         "FROM ToDoItems WHERE id = $1", id);
-            
+
+            string tagsStr = row["tags"].is_null() ? "" : row["tags"].as<std::string>();
+            if (!tagsStr.empty() && tagsStr.front() == '{' && tagsStr.back() == '}') 
+            {
+                tagsStr = tagsStr.substr(1, tagsStr.size() - 2);
+            }
+
             json::object foundItem
             {
                 {"id",          id},
                 {"name",        row["name"].as<string>()},
                 {"description", row["description"].is_null() ? "" : row["description"].as<string>()},
                 {"due_date",    row["due_date"].is_null() ? "" : row["due_date"].as<string>()},
-                {"status",      row["status"].as<string>()}
+                {"status",      row["status"].as<string>()},
+                {"priority",    row["priority"].as<int>()},
+                {"tags",        tagsStr}
             };
             item = move(foundItem);
             
@@ -264,18 +341,34 @@ public:
             if (params.size() == 1) 
             {
                 txn.exec_params(query, params[0]);
-            } else if (params.size() == 2) 
+            } 
+            else if (params.size() == 2) 
             {
                 txn.exec_params(query, params[0], params[1]);
-            } else if (params.size() == 3) 
+            } 
+            else if (params.size() == 3) 
             {
                 txn.exec_params(query, params[0], params[1], params[2]);
-            } else if (params.size() == 4) 
+            } 
+            else if (params.size() == 4) 
             {
                 txn.exec_params(query, params[0], params[1], params[2], params[3]);
-            } else if (params.size() == 5) 
+            } 
+            else if (params.size() == 5) 
             {
                 txn.exec_params(query, params[0], params[1], params[2], params[3], params[4]);
+            }
+            else if (params.size() == 6) 
+            {
+                txn.exec_params(query, params[0], params[1], params[2], params[3], params[4], params[5]);
+            }
+            else if (params.size() == 7) 
+            {
+                txn.exec_params(query, params[0], params[1], params[2], params[3], params[4], params[5], params[6]);
+            }
+            else 
+            {
+                throw runtime_error("Too many parameters for update");
             }
             txn.commit();
             this->release(conn_ptr);
