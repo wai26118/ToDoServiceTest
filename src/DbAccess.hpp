@@ -63,12 +63,11 @@ public:
             {
                 throw runtime_error("No available database connection");
             }
-            pqxx::work txn(*conn_ptr);            
-            string new_id = generate_id();
+            pqxx::work txn(*conn_ptr);
             auto result = txn.exec_params(
                 "INSERT INTO ToDoItems (id, name, description, due_date, status, priority, tags) "
                 "VALUES ($1, $2, $3, $4, $5::todo_item_status, $6, $7::text[])",
-                new_id, item.name, item.description.empty() ? nullopt : optional<string>{item.description},
+                item.id, item.name, item.description.empty() ? nullopt : optional<string>{item.description},
                 item.due_date.empty() ? nullopt : optional<string>{item.due_date},
                 item.status, item.priority, item.tags
             );
@@ -87,7 +86,7 @@ public:
         }
         return true;
     }
-    
+
     bool GetAllToDoItems(
         boost::json::array& out_items,
         std::optional<std::string> status_filter      = std::nullopt,
